@@ -1,0 +1,68 @@
+defaults:
+  - _self_
+  - task@_global_: cheetah_run
+  - agent@_global_: sac_obs_adv
+  - override hydra/launcher: submitit_local
+
+# eval
+eval_frequency: 10000
+num_eval_episodes: 10
+# snapshot
+save_snapshot: true
+# length
+replay_buffer_capacity: ${num_train_steps}
+# initial steps without update
+num_seed_steps: 5000
+#misc
+device: cuda
+# logger
+log_frequency: 10000
+log_save_tb: true
+# video recorder
+save_video: true
+seed: 1
+# expert data
+num_expert_episodes: 100
+#enable_imitation_only
+imitation_learning: false
+GAN_loss: least-square
+
+expert:
+  _target_: agents.sac.SACAgent
+  obs_dim: ??? # to be specified later
+  action_dim: ??? # to be specified later
+  action_range: ??? # to be specified later
+  device: ${device}
+  hidden_dim: 1024
+  hidden_depth: 2
+  discount: 0.99
+  init_temperature: 0.1
+  alpha_lr: 1e-4
+  alpha_betas: [0.9, 0.999]
+  actor_lr: 1e-4
+  actor_betas: [0.9, 0.999]
+  actor_update_frequency: 1
+  critic_lr: 1e-4
+  critic_betas: [0.9, 0.999]
+  critic_tau: 0.005
+  critic_target_update_frequency: 2
+  batch_size: 1024
+  learnable_temperature: true
+  log_std_bounds: [-5, 2]
+    
+
+# hydra configuration
+hydra:
+    run:
+      dir: ./experiments/exp_obs_adv_MDP/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
+  sweep:
+    dir: ./experiments/exp_multirun_obs_adv_MDP/${now:%Y.%m.%d.%H.%M}
+    subdir: ${hydra.job.override_dirname}
+  launcher:
+    timeout_min: 4300
+    cpus_per_task: 10
+    gpus_per_node: 1
+    tasks_per_node: 1
+    mem_gb: 160
+    nodes: 1
+    submitit_folder: ./experiments/exp_multirun_obs_adv_MDP/${now:%Y.%m.%d.%H.%M}/${hydra.job.override_dirname}
