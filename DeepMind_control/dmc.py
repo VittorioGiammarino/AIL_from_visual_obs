@@ -11,48 +11,6 @@ from dm_control import manipulation, suite
 from dm_control.suite.wrappers import action_scale, pixels
 from dm_env import StepType, specs
 
-from dmc_remastered import ALL_ENVS
-from dmc_remastered import DMCR_VARY
-
-class DMC_Remastered_Env(dm_env.Environment):
-    def __init__(self, 
-                 task_builder,
-                 visual_seed,
-                 env_seed,
-                 vary=DMCR_VARY):
-        
-        self._task_builder = task_builder
-        self._env_seed = env_seed
-        self._visual_seed = visual_seed
-        
-        self._env = self._task_builder(dynamics_seed=0, visual_seed=0, vary=vary)
-        self._vary = vary
-        
-        self.make_new_env()
-        
-    def make_new_env(self):
-        dynamics_seed = self._env_seed
-        visual_seed = self._visual_seed
-        self._env = self._task_builder(
-            dynamics_seed=dynamics_seed, visual_seed=visual_seed, vary=self._vary,
-        )
-        
-    def step(self, action):
-        return self._env.step(action)
-    
-    def observation_spec(self):
-        return self._env.observation_spec()
-
-    def action_spec(self):
-        return self._env.action_spec()
-
-    def reset(self):
-        return self._env.reset()
-
-    def __getattr__(self, name):
-        return getattr(self._env, name)    
-    
-
 class ExtendedTimeStep(NamedTuple):
     step_type: Any
     reward: Any
@@ -74,7 +32,6 @@ class ExtendedTimeStep(NamedTuple):
             return getattr(self, attr)
         else:
             return tuple.__getitem__(self, attr)
-
 
 class ActionRepeatWrapper(dm_env.Environment):
     def __init__(self, env, num_repeats):
@@ -186,7 +143,6 @@ class ActionDTypeWrapper(dm_env.Environment):
     def __getattr__(self, name):
         return getattr(self._env, name)
 
-
 class ExtendedTimeStepWrapper(dm_env.Environment):
     def __init__(self, env):
         self._env = env
@@ -217,7 +173,6 @@ class ExtendedTimeStepWrapper(dm_env.Environment):
 
     def __getattr__(self, name):
         return getattr(self._env, name)
-
 
 def make(name, frame_stack, action_repeat, seed, image_height=84, image_width=84):
     domain, task = name.split('_', 1)
@@ -254,36 +209,3 @@ def make(name, frame_stack, action_repeat, seed, image_height=84, image_width=84
     env = FrameStackWrapper(env, frame_stack, pixels_key)
     env = ExtendedTimeStepWrapper(env)
     return env
-
-def make_remastered(name, frame_stack, action_repeat, seed, visual_seed, image_height=84, image_width=84):
-    domain, task = name.split('_', 1)
-    # overwrite cup to ball_in_cup
-    domain = dict(cup='ball_in_cup').get(domain, domain)
-    
-    env = DMC_Remastered_Env(ALL_ENVS[domain][task], visual_seed, seed)
-    pixels_key = 'pixels'
-        
-    env = ActionDTypeWrapper(env, np.float32)
-    env = ActionRepeatWrapper(env, action_repeat)
-    env = action_scale.Wrapper(env, minimum=-1.0, maximum=+1.0)
-    
-    try:
-        if domain == 'quadruped':
-            camera_id = 2
-        else:
-            camera_id = 0
-                
-        render_kwargs = dict(height=image_height, width=image_width, camera_id=camera_id)
-        env = pixels.Wrapper(env,
-                             pixels_only=True,
-                             render_kwargs=render_kwargs)
-    except:
-        raise NotImplementedError
-        
-    # stack several frames
-    env = FrameStackWrapper(env, frame_stack, pixels_key)
-    env = ExtendedTimeStepWrapper(env)
-    return env
-
-
-

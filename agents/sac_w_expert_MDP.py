@@ -158,7 +158,6 @@ class SAC_Agent:
             else:
                 NotImplementedError
 
-
         # optimizers
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(),
                                                 lr=actor_lr,

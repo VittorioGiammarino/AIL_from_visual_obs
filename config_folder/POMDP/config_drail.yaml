@@ -1,0 +1,61 @@
+defaults:
+  - _self_
+  - replay_buffer@_global_: numpy
+  - replay_buffer_expert@_global_: numpy
+  - task@_global_: walker_walk
+  - agent@_global_: drail
+  - expert@_global_: ddpg
+  - override hydra/launcher: submitit_local
+
+# task settings
+frame_stack: 3
+action_repeat: 1
+discount: 0.99
+image_height: 84
+image_width: 84
+# train settings
+num_seed_frames: 4000
+# eval
+eval_every_frames: 10000
+num_eval_episodes: 10
+# snapshot
+save_snapshot: false
+# replay buffer
+replay_buffer_size: 1000000
+replay_buffer_num_workers: 4
+nstep: 3
+batch_size: 256
+# misc
+seed: 1
+device: cuda
+save_video: true
+save_train_video: false
+use_tb: true
+# experiment
+experiment: exp
+# agent
+lr: 1e-4
+feature_dim: 50
+# expert data
+num_expert_episodes: 100
+frame_skip: 1
+#discriminator feat
+discriminator_lr: 4e-4
+spectral_norm_bool: false
+GAN_loss: least-square
+from_dem: false
+
+hydra:
+  run:
+    dir: ./experiments/exp_drail/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
+  sweep:
+    dir: ./experiments/exp_multirun_drail/${now:%Y.%m.%d}_${hydra.job.override_dirname}
+    subdir: ${now:%H%M}_${hydra.job.override_dirname}
+  launcher:
+    timeout_min: 18000000
+    cpus_per_task: 10
+    gpus_per_node: 1
+    tasks_per_node: 1
+    mem_gb: 160
+    nodes: 1
+    submitit_folder: ./experiments/exp_multirun_drail/${now:%Y.%m.%d}_${hydra.job.override_dirname}/${now:%H%M}_${hydra.job.override_dirname}

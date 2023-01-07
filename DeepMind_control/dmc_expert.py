@@ -204,7 +204,6 @@ class DMC_Wrapper(core.Env):
                                 reward=new_time_step.reward or 0.0,
                                 discount=new_time_step.discount or 1.0)
 
-
 def make_states_only(domain_name,
                     task_name, 
                     seed, 
