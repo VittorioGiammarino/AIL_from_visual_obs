@@ -1,0 +1,45 @@
+defaults:
+  - _self_
+  - task@_global_: cheetah_run
+  - agent@_global_: ddpg_w_expert
+  - expert@_global_: ddpg
+  - override hydra/launcher: submitit_local
+
+# eval
+eval_frequency: 10000
+num_eval_episodes: 10
+# snapshot
+save_snapshot: true
+# length
+replay_buffer_capacity: ${num_train_steps}
+# initial steps without update
+num_seed_steps: 5000
+#misc
+device: cuda
+# logger
+log_frequency: 10000
+log_save_tb: true
+# video recorder
+save_video: true
+seed: 1
+# expert data
+num_expert_episodes: 100
+#imitation
+GAN_loss: least-square
+from_dem: false
+
+# hydra configuration
+hydra:
+    run:
+      dir: ./experiments/exp_w_expert_MDP/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
+  sweep:
+    dir: ./experiments/exp_multirun_w_expert_MDP/${now:%Y.%m.%d}_${hydra.job.override_dirname}
+    subdir: ${now:%H%M}_${hydra.job.override_dirname}
+  launcher:
+    timeout_min: 4300
+    cpus_per_task: 10
+    gpus_per_node: 1
+    tasks_per_node: 1
+    mem_gb: 160
+    nodes: 1
+    submitit_folder: ./experiments/exp_multirun_w_expert_MDP/${now:%Y.%m.%d}_${hydra.job.override_dirname}/${now:%H%M}_${hydra.job.override_dirname}

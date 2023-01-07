@@ -1,5 +1,5 @@
-agent:
-  _target_: agents.ddpg_w_expert_obs_adv_MDP.DDPG_Agent
+expert:
+  _target_: agents.ddpg.DDPG_Agent
   obs_dim: ??? # to be specified later
   action_dim: ??? # to be specified later
   action_range: ??? # to be specified later
@@ -18,8 +18,3 @@ agent:
   num_expl_steps: 0
   stddev_schedule: ${stddev_schedule}
   stddev_clip: 0.3
-  reward_schedule: ${reward_schedule}
-  reward_d_coef: 2.0
-  discriminator_lr: 1e-4
-  imitation_learning: ${imitation_learning}
-  GAN_loss: ${GAN_loss}

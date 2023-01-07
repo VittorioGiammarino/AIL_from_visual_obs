@@ -7,7 +7,7 @@ QSUBS/**
 expert_static_datasets/**
 expert_source_policies_POMDP/**
 expert_source_policies_POMDP_latent_model/**
-
+expert_policies/**
 
 *.sh
 *.mp4
