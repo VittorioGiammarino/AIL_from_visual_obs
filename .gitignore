@@ -1,3 +1,5 @@
+__pycache__/
+
 experiments/**
 make_data_set_local/**
 videos_of_bio_expert/**
