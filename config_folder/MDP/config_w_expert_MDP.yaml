@@ -24,6 +24,7 @@ save_video: true
 seed: 1
 # expert data
 num_expert_episodes: 100
+frame_skip: 1
 #imitation
 GAN_loss: least-square
 from_dem: false
@@ -31,15 +32,15 @@ from_dem: false
 # hydra configuration
 hydra:
     run:
-      dir: ./experiments/exp_w_expert_MDP/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
-  sweep:
-    dir: ./experiments/exp_multirun_w_expert_MDP/${now:%Y.%m.%d}_${hydra.job.override_dirname}
-    subdir: ${now:%H%M}_${hydra.job.override_dirname}
-  launcher:
-    timeout_min: 4300
-    cpus_per_task: 10
-    gpus_per_node: 1
-    tasks_per_node: 1
-    mem_gb: 160
-    nodes: 1
-    submitit_folder: ./experiments/exp_multirun_w_expert_MDP/${now:%Y.%m.%d}_${hydra.job.override_dirname}/${now:%H%M}_${hydra.job.override_dirname}
+        dir: ./experiments/exp_w_expert_MDP/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
+    sweep:
+        dir: ./experiments/exp_multirun_w_expert_MDP/${now:%Y.%m.%d}_${hydra.job.override_dirname}
+        subdir: ${now:%H%M}_${hydra.job.override_dirname}
+    launcher:
+        timeout_min: 4300
+        cpus_per_task: 10
+        gpus_per_node: 1
+        tasks_per_node: 1
+        mem_gb: 160
+        nodes: 1
+        submitit_folder: ./experiments/exp_multirun_w_expert_MDP/${now:%Y.%m.%d}_${hydra.job.override_dirname}/${now:%H%M}_${hydra.job.override_dirname}

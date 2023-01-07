@@ -1,3 +1,2 @@
 num_train_steps: 10100000
 stddev_schedule: 'linear(1.0,0.1,1500000)'
-reward_schedule: 'linear(1.0,0.0,10000000)'
