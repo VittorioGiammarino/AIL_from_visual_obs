@@ -105,13 +105,10 @@ class Discriminator(nn.Module):
 
     def forward_dem(self, transition):
 
-        print(f"transition shape {transition.shape}")
+        obs_action = torch.tensor_split(transition, (self.repr_dim,), dim=-1)
+        obs = obs_action[0]
+        action = obs_action[1]
 
-        action_shape = transition.shape[-1] - self.repr_dim
-        print(f"action shape computed {action_shape}")
-        print(f"sanity check {transition.shape[-1]} should be equal to {self.repr_dim + action_shape} ")
-
-        obs, action = torch.tensor_split(transition, (self.repr_dim, action_shape), dim=-1)
         h = self.trunk(obs)
         h_action = torch.cat([h, action], dim=-1)
         d = self.net(h_action)
@@ -189,8 +186,6 @@ class DrailAgent:
         self.GAN_loss = GAN_loss
         self.from_dem = from_dem
 
-        print(f"action shape: {action_shape[0]}")
-
         self.encoder = Encoder(obs_shape).to(device)
         self.actor = Actor(self.encoder.repr_dim, action_shape, feature_dim,
                            hidden_dim).to(device)
@@ -199,8 +194,6 @@ class DrailAgent:
         self.critic_target = Critic(self.encoder.repr_dim, action_shape,
                                     feature_dim, hidden_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
-
-        print(f"repr_dim: {self.encoder.repr_dim}")
         
         # added model
         if from_dem:
@@ -454,10 +447,10 @@ class DrailAgent:
         # update critic
         if self.from_dem:
             metrics.update(self.update_discriminator(obs_a, action, obs_e, action_e))
-            reward, metrics_r = self.compute_reward(obs, action, reward_a)
+            reward, metrics_r = self.compute_reward(obs, action)
         else:
             metrics.update(self.update_discriminator(obs_a, next_obs_a, obs_e, next_obs_e))
-            reward, metrics_r = self.compute_reward(obs, next_obs, reward_a)
+            reward, metrics_r = self.compute_reward(obs, next_obs)
 
         metrics.update(metrics_r)
 

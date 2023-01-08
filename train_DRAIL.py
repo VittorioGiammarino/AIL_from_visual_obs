@@ -127,7 +127,7 @@ class Workspace:
             
             while not done:
                 with torch.no_grad(), utils.eval_mode(self.expert):
-                    action = self.expert.act(obs, sample=False)
+                    action = self.expert.act(obs, self.global_step, eval_mode=True)
                 obs, reward, done, _, time_step = self.expert_env.step(action)    
                 
                 extended_time_step = self.expert_env.step_learn_from_pixels(time_step, action)
@@ -262,7 +262,7 @@ def main(cfg):
     root_dir = Path.cwd()
     workspace = W(cfg)
     parent_dir = root_dir.parents[3]
-    snapshot = parent_dir / f'expert_source_policies/snapshot_{cfg.task_name}_frame_skip_{cfg.frame_skip}.pt'
+    snapshot = parent_dir / f'expert_policies/snapshot_{cfg.task_name}_frame_skip_{cfg.frame_skip}.pt'
     assert snapshot.exists()
     print(f'loading expert target: {snapshot}')
     workspace.load_expert(snapshot)

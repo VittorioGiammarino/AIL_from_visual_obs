@@ -1,4 +1,4 @@
-replay_buffer:
+replay_buffer_expert:
   _target_: buffers.np_replay_buffer.EfficientReplayBuffer
   buffer_size: ${replay_buffer_size}
   batch_size: ${batch_size}
