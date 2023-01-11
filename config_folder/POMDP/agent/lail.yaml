@@ -1,0 +1,26 @@
+agent:
+  _target_: agents.lail.LailAgent
+  state_shape: ??? # to be specified later
+  action_shape: ??? # to be specified later
+  device: ${device}
+  gamma: 0.99
+  batch_size_actor: ${batch_size_actor}
+  batch_size_latent: ${batch_size_latent}
+  num_sequences: ${sequence_length}
+  lr_actor: ${lr_actor}
+  lr_latent: ${lr_latent}
+  feature_dim: ${feature_dim_agent}
+  z1_dim: ${z1_dim}
+  z2_dim: ${z2_dim}
+  hidden_units: ${hidden_units}
+  critic_target_tau: ${tau}
+  update_every_steps: 2
+  use_tb: ${use_tb}
+  num_expl_steps: 2000
+  reward_d_coef: 2.0
+  lr_discriminator: ${lr_discriminator}
+  stddev_schedule: ${stddev_schedule}
+  stddev_clip: 0.3
+  GAN_loss: ${GAN_loss}
+  from_dem: ${from_dem}
+  
