@@ -23,8 +23,8 @@ from utils_folder import utils_dreamer as utils
 from logger_folder.logger import Logger
 from video import TrainVideoRecorder, VideoRecorder
 
-from agents.dreamerv2_w_expert_obs_adv import DreamerV2Agent
-from agents.dreamerv2_w_expert_obs_only_adv import DreamerV2Agent_IL_from_obs_only
+from agents.vmail import VmailAgent
+from agents.vmaifo import VmaifoAgent
 
 torch.backends.cudnn.benchmark = True
 
@@ -48,19 +48,20 @@ class Workspace:
         self.eval_dataset = make_dataset(self.eval_eps, self.cfg)
         self.expert_dataset = make_dataset(self.expert_eps, self.cfg)
 
-        if cfg.IL_from_obs:
+        if cfg.from_dem:
+            print("Learning from expert states and actions")
+            self.agent = VmailAgent(self.train_env.action_space.shape, 
+                                    self.cfg.device, self.train_dataset, self.traindir, 
+                                    self.expert_dataset, self.expertdir,
+                                    self.cfg).to(self.cfg.device)
+
+        else:
             print("Learning from expert states only")
             self.cfg.batch_length_training += 1
-            self.agent = DreamerV2Agent_IL_from_obs_only(self.train_env.action_space.shape, 
-                                                        self.cfg.device, self.train_dataset, self.traindir, 
-                                                        self.expert_dataset, self.expertdir,
-                                                        self.cfg).to(self.cfg.device)
-        else:
-            print("Learning from expert states and actions")
-            self.agent = DreamerV2Agent(self.train_env.action_space.shape, 
-                                        self.cfg.device, self.train_dataset, self.traindir, 
-                                        self.expert_dataset, self.expertdir,
-                                        self.cfg).to(self.cfg.device)
+            self.agent = VmaifoAgent(self.train_env.action_space.shape, 
+                                     self.cfg.device, self.train_dataset, self.traindir, 
+                                     self.expert_dataset, self.expertdir,
+                                     self.cfg).to(self.cfg.device)
 
         self.agent.requires_grad_(requires_grad=False)
 
@@ -123,7 +124,7 @@ class Workspace:
 
             while not done:
                 with torch.no_grad(), utils.eval_mode(self.agent):
-                    action = self.expert.act(obs['state'], sample=True)
+                    action = self.expert.act(obs['state'], self.global_step, eval_mode=True)
                 
                 obs, reward, done, _ = self.expert_env.step(action)
                 self.video_recorder.record(self.expert_env)
@@ -213,7 +214,7 @@ class Workspace:
             # sample action
             with torch.no_grad(), utils.eval_mode(self.agent):
                 action, agent_state = self.agent.act(obs, agent_state, 
-                                                    self.global_step, eval_mode=False)
+                                                     self.global_step, eval_mode=False)
 
             # try to update the agent
             if not seed_until_step(self.global_step):
@@ -240,7 +241,7 @@ class Workspace:
             torch.save(payload, f)
 
     def load_snapshot(self):
-        snapshot = self.work_dir / 'snapshot.pt'
+        snapshot = self.work_dir / f'snapshot_{self.cfg.task_name}.pt'
         with snapshot.open('rb') as f:
             payload = torch.load(f)
         for k, v in payload.items():
@@ -252,13 +253,13 @@ class Workspace:
         self.expert = payload['agent']
 
 
-@hydra.main(config_path='config_folder/POMDP', config_name='config_dreamer_obs_adv')
+@hydra.main(config_path='config_folder/POMDP', config_name='config_vmail')
 def main(cfg):
-    from train_dreamer_w_expert_obs_adv import Workspace as W
+    from train_VMAIL import Workspace as W
     root_dir = Path.cwd()
     workspace = W(cfg)
     parent_dir = root_dir.parents[3]
-    snapshot = parent_dir / f'expert_source_policies/snapshot_{cfg.task_name}.pt'
+    snapshot = parent_dir / f'expert_policies/snapshot_{cfg.task_name}_frame_skip_{cfg.frame_skip}.pt'
     assert snapshot.exists()
     print(f'loading expert target: {snapshot}')
     workspace.load_expert(snapshot)

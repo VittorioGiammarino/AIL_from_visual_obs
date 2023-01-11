@@ -599,7 +599,6 @@ class ImagBehavior(nn.Module):
     self.actor_state_entropy = actor_state_entropy
     self.imag_gradient_mix = imag_gradient_mix
     self.GAN_loss = config.GAN_loss
-    self.imitation_learning = config.imitation_learning
 
     if config.dyn_discrete:
       feat_size = config.dyn_stoch*config.dyn_discrete + config.dyn_deter
@@ -667,14 +666,6 @@ class ImagBehavior(nn.Module):
           grad_penalty = self.compute_discriminator_grad_penalty_LS(feat_expert_dist.detach())
           discriminator_loss = 0.5*(expert_loss+policy_loss) + grad_penalty
           reward = self.compute_reward_LS(feat_policy_dist.detach())
-
-        if self.imitation_learning:
-          reward = reward
-        else:
-          reward_env = objective(imag_feat, imag_state, imag_action)
-          metrics['reward_env_mean'] = to_np(torch.mean(reward_env))
-          metrics['reward_IL_mean'] = to_np(torch.mean(reward))
-          reward = reward + reward_env
         
         actor_ent = self.actor(imag_feat).entropy()
         state_ent = self._world_model.dynamics.get_dist(imag_state).entropy()
@@ -828,9 +819,9 @@ class ImagBehavior(nn.Module):
 def count_steps(folder):
   return sum(int(str(n).split('-')[-1][:-4]) - 1 for n in folder.glob('*.npz'))
 
-class DreamerV2Agent(nn.Module):
+class VmailAgent(nn.Module):
   def __init__(self, action_shape, device, dataset, traindir, expert_dataset, expertdir, config):
-    super(DreamerV2Agent, self).__init__()
+    super(VmailAgent, self).__init__()
 
     self.action_shape = action_shape[0]
     self.device = device
@@ -845,7 +836,6 @@ class DreamerV2Agent(nn.Module):
     self.dataset = dataset
     self.expert_dataset = expert_dataset
     self.expert_steps = count_steps(expertdir)
-    self.imitation_learning = config.imitation_learning
 
     self.world_model = WorldModel(self._step, self.action_shape, config)
     self.task_behavior = ImagBehavior(config, self.action_shape, self.world_model, actor_entropy, 

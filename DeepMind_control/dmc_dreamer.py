@@ -9,58 +9,15 @@ from dm_control import manipulation, suite
 from dm_control.suite.wrappers import action_scale, pixels
 from dm_env import StepType, specs
 
-from dmc_remastered import ALL_ENVS
-from dmc_remastered import DMCR_VARY
-
 from DeepMind_control.dmc_expert import _spec_to_box, _flatten_obs
-
 from utils_folder import utils_dreamer as utils
 
-class DMC_Remastered_Env(dm_env.Environment):
-    def __init__(self, 
-                 task_builder,
-                 visual_seed,
-                 env_seed,
-                 vary=DMCR_VARY):
-        
-        self._task_builder = task_builder
-        self._env_seed = env_seed
-        self._visual_seed = visual_seed
-        
-        self._env = self._task_builder(dynamics_seed=0, visual_seed=0, vary=vary)
-        self._vary = vary
-        
-        self.make_new_env()
-        
-    def make_new_env(self):
-        dynamics_seed = self._env_seed
-        visual_seed = self._visual_seed
-        self._env = self._task_builder(
-            dynamics_seed=dynamics_seed, visual_seed=visual_seed, vary=self._vary,
-        )
-        
-    def step(self, action):
-        return self._env.step(action)
-    
-    def observation_spec(self):
-        return self._env.observation_spec()
-
-    def action_spec(self):
-        return self._env.action_spec()
-
-    def reset(self):
-        return self._env.reset()
-
-    def __getattr__(self, name):
-        return getattr(self._env, name)    
-
 class DeepMindControl:
-
-  def __init__(self, name, action_repeat, seed, visual_seed, image_height=64, image_width=64, camera=None):
+  def __init__(self, name, action_repeat, seed, image_height=64, image_width=64, camera=None):
     domain, task = name.split('_', 1)
     domain = dict(cup='ball_in_cup').get(domain, domain)
     
-    self._env = DMC_Remastered_Env(ALL_ENVS[domain][task], visual_seed, seed)
+    self._env = suite.load(domain, task, task_kwargs={'random': seed}, visualize_reward=False)
     self._action_repeat = action_repeat
     self._size = (image_height, image_width)
     if camera is None:
@@ -110,11 +67,11 @@ class DeepMindControl:
 
 class DeepMindControl_expert:
 
-  def __init__(self, name, action_repeat, seed, visual_seed, image_height=64, image_width=64, camera=None):
+  def __init__(self, name, action_repeat, seed, image_height=64, image_width=64, camera=None):
     domain, task = name.split('_', 1)
     domain = dict(cup='ball_in_cup').get(domain, domain)
     
-    self._env = DMC_Remastered_Env(ALL_ENVS[domain][task], visual_seed, seed)
+    self._env = suite.load(domain, task, task_kwargs={'random': seed}, visualize_reward=False)
     self._action_repeat = action_repeat
     self._size = (image_height, image_width)
     if camera is None:
@@ -335,7 +292,8 @@ def process_episode(config, traindir, evaldir, mode, train_eps, eval_eps, episod
 
 def make_env(config, traindir, evaldir, mode, train_eps, eval_eps):
   env = DeepMindControl(config.task_name, config.action_repeat, config.seed, 
-                      config.visual_seed, config.image_height, config.image_width)
+                        config.image_height, config.image_width)
+
   env = NormalizeActions(env)
   env = TimeLimit(env, config.time_limit)
   env = SelectAction(env, key='action')
@@ -357,8 +315,8 @@ def process_episode_expert(expertdir, expert_eps, episode):
   cache[str(filename)] = episode
 
 def make_env_expert(config, expertdir, expert_eps):
-  env = DeepMindControl_expert(config.task_name, config.action_repeat_source, config.seed, 
-                              config.visual_seed_source, config.image_height, config.image_width)
+  env = DeepMindControl_expert(config.task_name, config.frame_skip, config.seed, 
+                               config.image_height, config.image_width)
 
   env = NormalizeActions(env)
   env = TimeLimit(env, config.time_limit)

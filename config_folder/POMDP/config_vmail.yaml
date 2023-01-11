@@ -1,0 +1,166 @@
+defaults:
+  - _self_
+  - task@_global_: walker_walk
+  - expert@_global_: ddpg
+  - override hydra/launcher: submitit_local
+
+logdir: null
+traindir: null
+evaldir: null
+offline_traindir: ''
+offline_evaldir: ''
+seed: 0
+visual_seed: 0
+visual_seed_source: 0
+steps: 1e7
+eval_every: 1e4
+log_every: 1e4
+save_video: true
+save_train_video: false
+use_tb: true
+reset_every: 0
+#gpu_growth: True
+device: 'cuda'
+precision: 16
+debug: False
+expl_gifs: False
+
+# Environment
+image_height: 64
+image_width: 64
+envs: 1
+time_limit: 1000
+grayscale: False
+prefill: 2500
+eval_noise: 0.0
+clip_rewards: 'identity'
+
+# Model
+dyn_cell: 'gru_layer_norm'
+dyn_hidden: 200
+dyn_deter: 200
+dyn_stoch: 50
+dyn_discrete: 32
+dyn_input_layers: 1
+dyn_output_layers: 1
+dyn_rec_depth: 1
+dyn_shared: False
+dyn_mean_act: 'none'
+dyn_std_act: 'sigmoid2'
+dyn_min_std: 0.1
+dyn_temp_post: True
+grad_heads: ['image', 'reward']
+units: 400
+reward_layers: 2
+discount_layers: 3
+value_layers: 3
+actor_layers: 4
+act: 'ELU'
+cnn_depth: 32
+encoder_kernels: [4, 4, 4, 4]
+decoder_kernels: [5, 5, 6, 6]
+decoder_thin: True
+value_head: 'normal'
+kl_scale: '1.0'
+kl_balance: '0.8'
+kl_free: '1.0'
+kl_forward: False
+pred_discount: False
+discount_scale: 1.0
+reward_scale: 2.0
+weight_decay: 0.0
+
+# Training
+batch_size_training: 50
+batch_length_training: 50
+train_every: 5
+train_steps: 1
+model_lr: 3e-4
+value_lr: 8e-5
+actor_lr: 8e-5
+opt_eps: 1e-5
+grad_clip: 100
+value_grad_clip: 100
+actor_grad_clip: 100
+dataset_size: 0
+oversample_ends: False
+slow_value_target: True
+slow_actor_target: True
+slow_target_update: 100
+slow_target_fraction: 1
+opt: 'adam'
+
+# Behavior.
+discount: 0.99
+discount_lambda: 0.95
+imag_horizon: 15
+imag_gradient: 'dynamics'
+imag_gradient_mix: '1.0'
+imag_sample: True
+actor_dist: 'trunc_normal'
+actor_entropy: '1e-4'
+actor_state_entropy: 0.0
+actor_init_std: 1.0
+actor_min_std: 0.1
+actor_disc: 5
+actor_temp: 0.1
+actor_outscale: 0.0
+expl_amount: 0.0
+eval_state_mean: False
+collect_dyn_sample: True
+behavior_stop_grad: True
+value_decay: 0.0
+future_entropy: False
+
+# Exploration
+expl_behavior: 'greedy'
+expl_until: 0
+expl_extr_scale: 0.0
+expl_intr_scale: 1.0
+disag_target: 'stoch'
+disag_log: True
+disag_models: 10
+disag_offset: 1
+disag_layers: 4
+disag_units: 400
+disag_action_cond: False
+
+#dmc specs
+eval_every_frames: 1e4
+num_seed_frames: 5000
+pretrain: 100
+num_eval_episodes: 10
+save_snapshot: false
+num_expl_steps: 5000
+
+# Environment
+action_repeat: 2
+
+# Expert
+num_expert_episodes: 100
+frame_skip: 1
+
+# discriminator
+discriminator_layers: 2
+discriminator_head: 'binary'
+discriminator_lr: 8e-5
+discriminator_grad_clip: 100
+GAN_loss: "bce"
+reward_d_coef: 2.0
+from_dem: false
+
+hydra:
+  run:
+    dir: ./experiments/exp_vmail/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
+  sweep:
+    dir: ./experiments/exp_multirun_vmail/${now:%Y.%m.%d}_${hydra.job.override_dirname}
+    subdir: ${now:%H%M}_${hydra.job.override_dirname}
+  launcher:
+    timeout_min: 18000000
+    cpus_per_task: 10
+    gpus_per_node: 1
+    tasks_per_node: 1
+    mem_gb: 160
+    nodes: 1
+    submitit_folder: ./experiments/exp_multirun_vmail/${now:%Y.%m.%d}_${hydra.job.override_dirname}/${now:%H%M}_${hydra.job.override_dirname}
+
