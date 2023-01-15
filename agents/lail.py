@@ -345,6 +345,7 @@ class LailAgent:
         else:
             if self.GAN_loss == 'least-square':
                 self.discriminator = Discriminator((num_sequences+1)*feature_dim, feature_dim, hidden_units).to(device) 
+                self.reward_d_coef = reward_d_coef
 
             elif self.GAN_loss == 'bce':
                 self.discriminator = Discriminator((num_sequences+1)*feature_dim, feature_dim, hidden_units, dist='binary').to(device) 
