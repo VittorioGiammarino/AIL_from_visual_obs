@@ -22,7 +22,7 @@ num_eval_episodes: 10
 # snapshot
 save_snapshot: false
 # replay buffer
-replay_buffer_size: 100000
+replay_buffer_size: 1000000
 sequence_length: 10
 batch_size_actor: 256
 batch_size_latent: 32
