@@ -134,7 +134,7 @@ save_snapshot: false
 num_expl_steps: 5000
 
 # Environment
-action_repeat: 2
+action_repeat: 1
 
 # Expert
 num_expert_episodes: 100
