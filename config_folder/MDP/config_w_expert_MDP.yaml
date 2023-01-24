@@ -9,7 +9,7 @@ defaults:
 eval_frequency: 10000
 num_eval_episodes: 10
 # snapshot
-save_snapshot: true
+save_snapshot: false
 # length
 replay_buffer_capacity: ${num_train_steps}
 # initial steps without update
@@ -18,9 +18,9 @@ num_seed_steps: 5000
 device: cuda
 # logger
 log_frequency: 10000
-log_save_tb: true
+log_save_tb: false
 # video recorder
-save_video: true
+save_video: false
 seed: 1
 # expert data
 num_expert_episodes: 100
@@ -34,13 +34,13 @@ hydra:
     run:
         dir: ./experiments/exp_w_expert_MDP/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
     sweep:
-        dir: ./experiments/exp_multirun_w_expert_MDP/${now:%Y.%m.%d}_${hydra.job.override_dirname}
-        subdir: ${now:%H%M}_${hydra.job.override_dirname}
+        dir: ./experiments/exp_multirun_w_expert_MDP_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/
+        subdir: ${now:%Y.%m.%d}_${now:%H%M}_${hydra.job.override_dirname}
     launcher:
-        timeout_min: 4300
+        timeout_min: 18000000
         cpus_per_task: 10
         gpus_per_node: 1
         tasks_per_node: 1
         mem_gb: 160
         nodes: 1
-        submitit_folder: ./experiments/exp_multirun_w_expert_MDP/${now:%Y.%m.%d}_${hydra.job.override_dirname}/${now:%H%M}_${hydra.job.override_dirname}
+        submitit_folder: ./experiments/exp_multirun_w_expert_MDP_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/${now:%Y.%m.%d}_${now:%H%M}
