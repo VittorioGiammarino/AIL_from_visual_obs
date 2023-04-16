@@ -46,7 +46,7 @@ hydra:
   run:
     dir: ./experiments/exp_drail_POMDP/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
   sweep:
-    dir: ./experiments/exp_multirun_drail_POMDP_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/
+    dir: ./experiments/exp_multirun_drail_POMDP_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}_observables_${observables}_action_observable_${action_observable}/
     subdir: ${now:%Y.%m.%d}_${now:%H%M}_${hydra.job.override_dirname}
   launcher:
     timeout_min: 18000000
@@ -55,4 +55,4 @@ hydra:
     tasks_per_node: 1
     mem_gb: 160
     nodes: 1
-    submitit_folder: ./experiments/exp_multirun_drail_POMDP_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/${now:%Y.%m.%d}_${now:%H%M}
+    submitit_folder: ./experiments/exp_multirun_drail_POMDP_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}_observables_${observables}_action_observable_${action_observable}/${now:%Y.%m.%d}_${now:%H%M}
