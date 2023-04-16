@@ -1,0 +1,7 @@
+replay_buffer_expert:
+  _target_: buffers.replay_buffer_latent_model_obs_only.ReplayBuffer
+  buffer_size: ${replay_buffer_size}
+  batch_size: ${batch_size}
+  nstep: ${nstep}
+  discount: ${discount}
+  frame_stack: ${frame_stack}

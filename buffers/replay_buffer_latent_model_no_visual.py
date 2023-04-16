@@ -3,22 +3,6 @@ from collections import deque
 import numpy as np
 import torch
 
-
-class LazyFrames:
-    """
-    Stacked frames which never allocate memory to the same frame.
-    """
-
-    def __init__(self, frames):
-        self._frames = list(frames)
-
-    def __array__(self, dtype):
-        return np.array(self._frames, dtype=dtype)
-
-    def __len__(self):
-        return len(self._frames)
-
-
 class SequenceBuffer:
     """
     Buffer for storing sequence data.
@@ -52,7 +36,7 @@ class SequenceBuffer:
         self.state_.append(next_state)
 
     def get(self):
-        state_ = LazyFrames(self.state_)
+        state_ = np.array(self.state_, dtype=np.float32)
         action_ = np.array(self.action_, dtype=np.float32)
         reward_ = np.array(self.reward_, dtype=np.float32)
         done_ = np.array(self.done_, dtype=np.float32)
@@ -82,7 +66,7 @@ class ReplayBuffer:
         self.device = device
 
         # Store the sequence of images as a list of LazyFrames on CPU. It can store images with 9 times less memory.
-        self.state_ = [None] * buffer_size
+        self.state_ = torch.empty(buffer_size, num_sequences+1, *state_shape, device=device)
         # Store other data on GPU to reduce workloads.
         self.action_ = torch.empty(buffer_size, num_sequences, *action_shape, device=device)
         self.reward_ = torch.empty(buffer_size, num_sequences, 1, device=device)
@@ -90,23 +74,19 @@ class ReplayBuffer:
         # Buffer to store a sequence of trajectories.
         self.buff = SequenceBuffer(num_sequences=num_sequences)
 
-    def reset_episode(self, time_step):
+    def reset_episode(self, obs):
         """
         Reset the buffer and set the initial observation. This has to be done before every episode starts.
         """
-        assert time_step.first()
-        state = time_step.observation
+        state = obs
         self.buff.reset_episode(state)
 
-    def append(self, time_step, episode_done):
+    def append(self, obs, action, reward, episode_done):
         """
         Store trajectory in the buffer. If the buffer is full, the sequence of trajectories is stored in replay buffer.
         Please pass 'masked' and 'true' done so that we can assert if the start/end of an episode is handled properly.
         """
-        action = time_step.action
-        next_state = time_step.observation
-        reward = time_step.reward
-
+        next_state = obs
         self.buff.append(action, reward, episode_done, next_state)
 
         if self.buff.is_full():
@@ -117,7 +97,7 @@ class ReplayBuffer:
             self.buff.reset()
 
     def _append(self, state_, action_, reward_, done_):
-        self.state_[self._p] = state_
+        self.state_[self._p].copy_(torch.from_numpy(state_))
         self.action_[self._p].copy_(torch.from_numpy(action_))
         self.reward_[self._p].copy_(torch.from_numpy(reward_))
         self.done_[self._p].copy_(torch.from_numpy(done_))
@@ -130,22 +110,14 @@ class ReplayBuffer:
         Sample trajectories for updating latent variable model.
         """
         idxes = np.random.randint(low=0, high=self._n, size=batch_size)
-        state_ = np.empty((batch_size, self.num_sequences + 1, *self.state_shape), dtype=np.uint8)
-        for i, idx in enumerate(idxes):
-            state_[i, ...] = self.state_[idx]
-        state_ = torch.tensor(state_, dtype=torch.uint8, device=self.device).float().div_(255.0)
-        return state_, self.action_[idxes], self.reward_[idxes], self.done_[idxes]
+        return self.state_[idxes], self.action_[idxes], self.reward_[idxes], self.done_[idxes]
 
     def sample_actor(self, batch_size):
         """
         Sample trajectories for updating actor.
         """
         idxes = np.random.randint(low=0, high=self._n, size=batch_size)
-        state_ = np.empty((batch_size, self.num_sequences + 1, *self.state_shape), dtype=np.uint8)
-        for i, idx in enumerate(idxes):
-            state_[i, ...] = self.state_[idx]
-        state_ = torch.tensor(state_, dtype=torch.uint8, device=self.device).float().div_(255.0)
-        return state_, self.action_[idxes], self.reward_[idxes, -1], self.done_[idxes, -1]
+        return self.state_[idxes], self.action_[idxes], self.reward_[idxes, -1], self.done_[idxes, -1]
 
     def __len__(self):
         return self._n

@@ -1,0 +1,6 @@
+defaults:
+  - easy
+  - _self_
+
+task_name: cartpole_swingup
+observables: ["position"] #["position", "velocity"]
