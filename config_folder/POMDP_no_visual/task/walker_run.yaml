@@ -5,3 +5,4 @@ defaults:
 task_name: walker_run
 nstep: 1
 batch_size: 512
+observables: ["orientations", "height"] #["orientations", "height", "velocity"]

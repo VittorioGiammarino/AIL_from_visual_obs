@@ -3,3 +3,4 @@ defaults:
   - _self_
 
 task_name: cheetah_run
+observables: ["orientations", "height"] #["orientations", "height", "velocity"]
