@@ -3,4 +3,4 @@ defaults:
   - _self_
 
 task_name: hopper_hop
-observables: ["orientations", "height"] #["orientations", "height", "velocity"]
+observables: ["position", "touch"] #["position", "touch", "velocity"]
