@@ -23,6 +23,8 @@ from buffers.replay_buffer_latent_model_expert_no_visual import ReplayBuffer as 
 from DeepMind_control import dmc_POMDP
 import hydra
 
+torch.autograd.set_detect_anomaly(False)
+
 def make_env(cfg):
     """Helper function to create dm_control environment"""
     domain, task = cfg.task_name.split('_', 1)

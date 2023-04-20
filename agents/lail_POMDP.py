@@ -199,9 +199,7 @@ class LatentModel(nn.Module):
         # Prediction loss of images.
         z_ = torch.cat([z1_, z2_], dim=-1)
         state_mean_, state_std_ = self.decoder(z_)
-        state_noise_ = (state_ - state_mean_) / (state_std_ + 1e-8)
-        log_likelihood_ = (-0.5 * state_noise_.pow(2) - state_std_.log()) - 0.5 * math.log(2 * math.pi)
-        loss_image = -log_likelihood_.mean(dim=0).sum()
+        loss_image = F.mse_loss(state_, state_mean_)
 
         # Prediction loss of rewards.
         x = torch.cat([z_[:, :-1], action_, z_[:, 1:]], dim=-1)

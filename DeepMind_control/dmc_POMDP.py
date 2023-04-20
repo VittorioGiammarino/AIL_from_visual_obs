@@ -133,7 +133,7 @@ class DMC_Wrapper(core.Env):
 
     def _flatten_obs_full(self, obs):
         obs_pieces = []
-        print(obs)
+        # print(obs)
         for v in obs.values():
             flat = np.array([v]) if np.isscalar(v) else v.ravel()
             obs_pieces.append(flat)
