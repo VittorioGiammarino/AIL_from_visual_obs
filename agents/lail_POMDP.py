@@ -196,12 +196,13 @@ class LatentModel(nn.Module):
         # Calculate KL divergence loss.
         loss_kld = utils.calculate_kl_divergence(z1_mean_post_, z1_std_post_, z1_mean_pri_, z1_std_pri_).mean(dim=0).sum()
 
-        # Prediction loss of images.
-        z_ = torch.cat([z1_, z2_], dim=-1)
-        state_mean_, state_std_ = self.decoder(z_)
-        state_noise_ = torch.clamp((state_ - state_mean_) / (state_std_ + 1e-8), -100, 100)
-        log_likelihood_state_ = (-0.5 * state_noise_.pow(2) - state_std_.log()) - 0.5 * math.log(2 * math.pi)
-        loss_image = -log_likelihood_state_.mean(dim=0).sum()
+        # # Prediction loss of images.
+        # # z_ = torch.cat([z1_, z2_], dim=-1)
+        # # state_mean_, state_std_ = self.decoder(z_)
+        # # state_noise_ = torch.clamp((state_ - state_mean_) / (state_std_ + 1e-8), -100, 100)
+        # # log_likelihood_state_ = (-0.5 * state_noise_.pow(2) - state_std_.log()) - 0.5 * math.log(2 * math.pi)
+        # loss_image = -log_likelihood_state_.mean(dim=0).sum()
+        loss_image = 0
 
         # Prediction loss of rewards.
         x = torch.cat([z_[:, :-1], action_, z_[:, 1:]], dim=-1)
@@ -354,7 +355,7 @@ class LailPOMDPAgent:
         loss_kld, loss_image, loss_reward = self.latent.calculate_loss(state_, action_, reward_, done_)
 
         self.optim_latent.zero_grad()
-        (loss_kld + loss_image + loss_reward).backward()
+        (loss_kld + loss_reward).backward() 
         self.optim_latent.step()
 
         if self.use_tb:
