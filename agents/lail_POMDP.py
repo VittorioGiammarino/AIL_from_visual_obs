@@ -199,11 +199,10 @@ class LatentModel(nn.Module):
         # # Prediction loss of images.
         z_ = torch.cat([z1_, z2_], dim=-1)
 
-        # # state_mean_, state_std_ = self.decoder(z_)
-        # # state_noise_ = torch.clamp((state_ - state_mean_) / (state_std_ + 1e-8), -100, 100)
-        # # log_likelihood_state_ = (-0.5 * state_noise_.pow(2) - state_std_.log()) - 0.5 * math.log(2 * math.pi)
-        # loss_image = -log_likelihood_state_.mean(dim=0).sum()
-        loss_image = torch.FloatTensor([0])
+        state_mean_, state_std_ = self.decoder(z_)
+        state_noise_ = torch.clamp((state_ - state_mean_) / (state_std_ + 1e-8), -10, 10)
+        log_likelihood_state_ = (-0.5 * state_noise_.pow(2) - state_std_.log()) - 0.5 * math.log(2 * math.pi)
+        loss_image = -log_likelihood_state_.mean(dim=0).sum()
 
         # Prediction loss of rewards.
         x = torch.cat([z_[:, :-1], action_, z_[:, 1:]], dim=-1)
@@ -211,7 +210,7 @@ class LatentModel(nn.Module):
         reward_mean_, reward_std_ = self.reward(x.view(B * S, X))
         reward_mean_ = reward_mean_.view(B, S, 1)
         reward_std_ = reward_std_.view(B, S, 1)
-        reward_noise_ = (reward_ - reward_mean_) / (reward_std_ + 1e-8)
+        reward_noise_ = torch.clamp((reward_ - reward_mean_) / (reward_std_ + 1e-8), -10, 10)
         log_likelihood_reward_ = (-0.5 * reward_noise_.pow(2) - reward_std_.log()) - 0.5 * math.log(2 * math.pi)
         loss_reward = -log_likelihood_reward_.mul_(1 - done_).mean(dim=0).sum()
         return loss_kld, loss_image, loss_reward
