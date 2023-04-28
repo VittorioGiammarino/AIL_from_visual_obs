@@ -355,7 +355,7 @@ class LailPOMDPAgent:
         loss_kld, loss_image, loss_reward = self.latent.calculate_loss(state_, action_, reward_, done_)
 
         self.optim_latent.zero_grad()
-        (loss_kld + loss_reward).backward() 
+        (loss_kld + loss_image + loss_reward).backward() 
         self.optim_latent.step()
 
         if self.use_tb:
