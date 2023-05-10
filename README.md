@@ -4,14 +4,14 @@
 
 ### Use anaconda to create a virtual environment
 
-Install [MuJoCo](https://github.com/deepmind/mujoco)
-
 **Step 1.** install miniconda
 
 ```shell
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
+
+**Step 3.** Install [MuJoCo](https://github.com/deepmind/mujoco)
 
 **Step 2.** clone repo and create conda environment
 
