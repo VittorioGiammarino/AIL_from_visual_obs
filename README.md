@@ -11,9 +11,9 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
 
-**Step 3.** Install [MuJoCo](https://github.com/deepmind/mujoco)
+**Step 2.** Install [MuJoCo](https://github.com/deepmind/mujoco)
 
-**Step 2.** clone repo and create conda environment
+**Step 3.** clone repo and create conda environment
 
 ```shell
 conda env create -f environment.yml
