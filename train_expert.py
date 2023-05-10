@@ -157,7 +157,7 @@ class Workspace(object):
             self._step += 1
             
     def save_snapshot(self):
-        snapshot = self.work_dir / f'snapshot_{self.cfg.task_name}.pt'
+        snapshot = self.work_dir / f'snapshot_{self.cfg.task_name}_frame_skip_{self.cfg.frame_skip}.pt'
         keys_to_save = ['agent', '_step', '_global_episode']
         payload = {k: self.__dict__[k] for k in keys_to_save}
         with snapshot.open('wb') as f:

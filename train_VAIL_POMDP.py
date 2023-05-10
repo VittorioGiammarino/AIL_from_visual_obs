@@ -298,7 +298,7 @@ class Workspace(object):
         self.expert = payload['agent']
 
 
-@hydra.main(config_path='config_folder/POMDP_no_visual', config_name='config_lail_POMDP')
+@hydra.main(config_path='config_folder/POMDP_no_visual', config_name='config_vail_POMDP')
 def main(cfg):
     root_dir = Path.cwd()
     workspace = Workspace(cfg)

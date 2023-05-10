@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - task@_global_: cheetah_run
+  - task@_global_: walker_walk
   - agent@_global_: sac
   - override hydra/launcher: submitit_local
 
@@ -22,7 +22,7 @@ log_save_tb: true
 save_video: true
 #env specs
 seed: 1
-frame_skip: 2   
+frame_skip: 1   
 
 # hydra configuration
 hydra:

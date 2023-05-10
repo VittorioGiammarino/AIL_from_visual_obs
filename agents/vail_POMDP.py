@@ -1,7 +1,3 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-#
-# This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
 import hydra
 import math
 import numpy as np
@@ -235,7 +231,7 @@ class Discriminator(nn.Module):
         else:
             return d 
 
-class LailPOMDPAgent:
+class VailPOMDPAgent:
     def __init__(self, obs_shape, action_shape, device, gamma, batch_size_actor,
                 batch_size_latent, num_sequences, lr_actor, lr_latent, z1_dim, z2_dim, hidden_units, feature_dim,
                 critic_target_tau, update_every_steps, use_tb, num_expl_steps, reward_d_coef, lr_discriminator, 

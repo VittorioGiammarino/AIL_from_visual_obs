@@ -1,7 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-#
-# This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
+#!/usr/bin/env python3
 import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 
@@ -301,9 +298,9 @@ class Workspace:
             payload = torch.load(f)
         self.expert = payload['agent']
 
-@hydra.main(config_path='config_folder/POMDP', config_name='config_lail')
+@hydra.main(config_path='config_folder/POMDP', config_name='config_vail')
 def main(cfg):
-    from train_LAIL import Workspace as W
+    from train_VAIL import Workspace as W
     root_dir = Path.cwd()
     workspace = W(cfg)
     parent_dir = root_dir.parents[3]

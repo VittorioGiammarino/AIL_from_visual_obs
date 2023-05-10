@@ -2,6 +2,7 @@ name: AdvIL_from_videos
 channels:
   - pytorch
   - nvidia
+  - conda-forge
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=main
@@ -24,8 +25,8 @@ dependencies:
   - brunsli=0.1=h2531618_0
   - bzip2=1.0.8=h7b6447c_0
   - c-ares=1.18.1=h7f8727e_0
-  - ca-certificates=2022.07.19=h06a4308_0
-  - certifi=2022.6.15=py39h06a4308_0
+  - ca-certificates=2022.9.24=ha878542_0
+  - certifi=2022.9.24=pyhd8ed1ab_0
   - cffi=1.15.1=py39h74dc2b5_0
   - cfitsio=3.470=h5893167_7
   - charls=2.2.0=h2531618_0
@@ -39,6 +40,7 @@ dependencies:
   - debugpy=1.5.1=py39h295c915_0
   - decorator=5.1.1=pyhd3eb1b0_0
   - defusedxml=0.7.1=pyhd3eb1b0_0
+  - einops=0.4.1=pyhd8ed1ab_0
   - entrypoints=0.4=py39h06a4308_0
   - executing=0.8.3=pyhd3eb1b0_0
   - ffmpeg=4.2.2=h20bf706_0
@@ -104,6 +106,7 @@ dependencies:
   - locket=1.0.0=py39h06a4308_0
   - lz4-c=1.9.3=h295c915_1
   - markupsafe=2.1.1=py39h7f8727e_0
+  - matplotlib-base=3.5.2=py39h700656a_0
   - matplotlib-inline=0.1.6=py39h06a4308_0
   - mistune=0.8.4=py39h27cfd23_1000
   - mkl=2021.4.0=h06a4308_640
@@ -120,6 +123,7 @@ dependencies:
   - nettle=3.7.3=hbbd107a_1
   - networkx=2.8.4=py39h06a4308_0
   - notebook=6.4.12=py39h06a4308_0
+  - numpy-base=1.21.5=py39ha15fc14_3
   - openh264=2.1.1=h4ff587b_0
   - openjpeg=2.4.0=h3ad879b_0
   - openssl=1.1.1q=h7f8727e_0
@@ -145,6 +149,7 @@ dependencies:
   - python=3.9.7=h12debd9_1
   - python-dateutil=2.8.2=pyhd3eb1b0_0
   - python-fastjsonschema=2.16.2=py39h06a4308_0
+  - python_abi=3.9=2_cp39
   - pytorch=1.12.1=py3.9_cuda11.3_cudnn8.3.2_0
   - pytorch-mutex=1.0=cuda
   - pytz=2022.1=py39h06a4308_0
@@ -204,6 +209,7 @@ dependencies:
     - gym-notices==0.0.8
     - h5py==3.7.0
     - hydra-core==1.1.0
+    - hydra-joblib-launcher==1.2.0
     - hydra-submitit-launcher==1.1.5
     - imageio==2.9.0
     - imageio-ffmpeg==0.4.4
@@ -224,6 +230,7 @@ dependencies:
     - pyasn1==0.4.8
     - pyasn1-modules==0.2.8
     - pyopengl==3.1.6
+    - pyopengl-accelerate==3.1.6
     - requests-oauthlib==1.3.1
     - rsa==4.9
     - scikit-learn==1.1.2

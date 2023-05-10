@@ -3,7 +3,7 @@ defaults:
   - replay_buffer@_global_: latent_model
   - replay_buffer_expert@_global_: latent_model_expert
   - task@_global_: walker_walk
-  - agent@_global_: lail
+  - agent@_global_: vail
   - expert@_global_: ddpg
   - override hydra/launcher: submitit_local
 
@@ -52,9 +52,9 @@ from_dem: false
   
 hydra:
   run:
-    dir: ./experiments/exp_lail/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
+    dir: ./experiments/exp_vail/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
   sweep:
-    dir: ./experiments/exp_multirun_lail_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/
+    dir: ./experiments/exp_multirun_vail_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/
     subdir: ${now:%Y.%m.%d}_${now:%H%M}_${hydra.job.override_dirname}
   launcher:
     timeout_min: 18000000
@@ -63,4 +63,4 @@ hydra:
     tasks_per_node: 1
     mem_gb: 160
     nodes: 1
-    submitit_folder: ./experiments/exp_multirun_lail_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/${now:%Y.%m.%d}_${now:%H%M}
+    submitit_folder: ./experiments/exp_multirun_vail_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/${now:%Y.%m.%d}_${now:%H%M}
