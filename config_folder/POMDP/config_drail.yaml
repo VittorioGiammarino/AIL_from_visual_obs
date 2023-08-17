@@ -45,6 +45,11 @@ spectral_norm_bool: false
 GAN_loss: least-square
 from_dem: false
 
+# PatchAIL_config
+reward_type: 'airl'
+reward_scale: 1.0
+
+
 hydra:
   run:
     dir: ./experiments/exp_drail/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
