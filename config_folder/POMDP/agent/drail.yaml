@@ -1,3 +1,6 @@
+
+agent_name: drail
+
 agent:
   _target_: agents.drail.DrailAgent
   obs_shape: ??? # to be specified later

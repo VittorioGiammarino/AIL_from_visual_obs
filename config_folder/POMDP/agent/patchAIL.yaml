@@ -1,3 +1,6 @@
+
+agent_name: patchAIL
+
 agent:
   _target_: agents.patchAIL.PatchAilAgent
   obs_shape: ??? # to be specified later
