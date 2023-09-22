@@ -253,9 +253,9 @@ class Workspace:
             payload = torch.load(f)
         self.expert = payload['agent']
 
-@hydra.main(config_path='config_folder/POMDP', config_name='config_drail')
+@hydra.main(config_path='config_folder/POMDP', config_name='config_lail')
 def main(cfg):
-    from train_DRAIL import Workspace as W
+    from train_LAIL import Workspace as W
     root_dir = Path.cwd()
     workspace = W(cfg)
     parent_dir = root_dir.parents[3]

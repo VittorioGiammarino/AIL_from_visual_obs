@@ -33,53 +33,31 @@ Alternatively, download the policies [here](https://figshare.com/s/22de566de2229
 
 **DAC**
 ```shell
-python train_w_expert_MDP.py task=walker_walk seed=0 GAN_loss=least-square from_dem=true
-```
-```shell
 python train_w_expert_MDP.py task=walker_walk seed=0 GAN_loss=bce from_dem=true
 ```
 
 **DACfO**
 ```shell
-python train_w_expert_MDP.py task=walker_walk seed=0 GAN_loss=least-square from_dem=false
-```
-```shell
 python train_w_expert_MDP.py task=walker_walk seed=0 GAN_loss=bce from_dem=false
 ```
 
-**DRAIL**
+**patchAIL**
 ```shell
-python train_DRAIL.py task=walker_walk seed=0 GAN_loss=least-square from_dem=true
-```
-```shell
-python train_DRAIL.py task=walker_walk seed=0 GAN_loss=bce from_dem=true
+python train_LAIL.py task=walker_walk agent=patchAIL seed=0 GAN_loss=bce discriminator_lr=1e-4
 ```
 
-**DRAIfO**
+**LAIfO**
 ```shell
-python train_DRAIL.py task=walker_walk seed=0 GAN_loss=least-square from_dem=false
-```
-```shell
-python train_DRAIL.py task=walker_walk seed=0 GAN_loss=bce from_dem=false
-```
-
-**VAIL**
-```shell
-python train_VAIL.py task=walker_walk seed=0 GAN_loss=least-square from_dem=true
-```
-```shell
-python train_VAIL.py task=walker_walk seed=0 GAN_loss=bce from_dem=true
-```
-
-**VAIfO**
-```shell
-python train_VAIL.py task=walker_walk seed=0 GAN_loss=least-square from_dem=false
-```
-```shell
-python train_VAIL.py task=walker_walk seed=0 GAN_loss=bce from_dem=false
+python train_LAIL.py task=walker_walk agent=lail seed=0 GAN_loss=bce from_dem=false
 ```
 
 **VMAIL**
 ```shell
 python train_VMAIL.py task=walker_walk seed=0 GAN_loss=bce from_dem=true
 ```
+
+**LAIL**
+```shell
+python train_LAIL.py task=walker_walk agent=lail seed=0 GAN_loss=bce from_dem=true
+```
+

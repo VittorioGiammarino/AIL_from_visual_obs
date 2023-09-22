@@ -21,7 +21,6 @@ from logger_folder.logger import Logger
 from video import TrainVideoRecorder, VideoRecorder
 
 from agents.vmail import VmailAgent
-from agents.vmaifo import VmaifoAgent
 
 torch.backends.cudnn.benchmark = True
 
