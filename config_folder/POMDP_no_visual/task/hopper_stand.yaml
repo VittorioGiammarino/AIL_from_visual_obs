@@ -1,6 +1,0 @@
-defaults:
-  - easy
-  - _self_
-
-task_name: hopper_stand
-observables: ["position", "touch"] #["position", "touch", "velocity"]

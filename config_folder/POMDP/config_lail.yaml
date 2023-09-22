@@ -2,16 +2,17 @@ defaults:
   - _self_
   - replay_buffer@_global_: numpy
   - replay_buffer_expert@_global_: numpy
-  - task@_global_: pendulum_swingup
-  - agent@_global_: drail_POMDP
+  - task@_global_: walker_walk
+  - agent@_global_: lail
   - expert@_global_: ddpg
   - override hydra/launcher: submitit_local
 
 # task settings
-states_stack: 10
+frame_stack: 3
 action_repeat: 1
 discount: 0.99
-action_observable: false
+image_height: 84
+image_width: 84
 # train settings
 num_seed_frames: 4000
 # eval
@@ -21,13 +22,15 @@ num_eval_episodes: 10
 save_snapshot: false
 # replay buffer
 replay_buffer_size: 1000000
+replay_buffer_num_workers: 4
+nstep: 3
 batch_size: 256
 # misc
 seed: 1
 device: cuda
-save_video: true
+save_video: false
 save_train_video: false
-use_tb: true
+use_tb: false
 # experiment
 experiment: exp
 # agent
@@ -35,18 +38,23 @@ lr: 1e-4
 feature_dim: 50
 # expert data
 num_expert_episodes: 100
-state_skip: 1
+frame_skip: 1
 #discriminator feat
 discriminator_lr: 4e-4
 spectral_norm_bool: false
-GAN_loss: least-square
+GAN_loss: bce
 from_dem: false
+
+# PatchAIL_config
+reward_type: 'airl'
+reward_scale: 1.0
+
 
 hydra:
   run:
-    dir: ./experiments/exp_drail_POMDP/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
+    dir: ./experiments/exp_${agent_name}/${now:%Y.%m.%d}/${now:%H%M}_${hydra.job.override_dirname}
   sweep:
-    dir: ./experiments/exp_multirun_drail_POMDP_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}_observables_${observables}_action_observable_${action_observable}/
+    dir: ./experiments/exp_multirun_${agent_name}_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/
     subdir: ${now:%Y.%m.%d}_${now:%H%M}_${hydra.job.override_dirname}
   launcher:
     timeout_min: 18000000
@@ -55,4 +63,4 @@ hydra:
     tasks_per_node: 1
     mem_gb: 160
     nodes: 1
-    submitit_folder: ./experiments/exp_multirun_drail_POMDP_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}_observables_${observables}_action_observable_${action_observable}/${now:%Y.%m.%d}_${now:%H%M}
+    submitit_folder: ./experiments/exp_multirun_${agent_name}_${task_name}_num_expert_episodes_${num_expert_episodes}/GAN_loss_${GAN_loss}_from_dem_${from_dem}/${now:%Y.%m.%d}_${now:%H%M}

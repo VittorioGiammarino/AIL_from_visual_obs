@@ -1,6 +1,0 @@
-defaults:
-  - medium
-  - _self_
-
-task_name: cheetah_run
-observables: ["position"] #["position", "velocity"]
