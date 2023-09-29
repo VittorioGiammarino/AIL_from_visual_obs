@@ -1,4 +1,4 @@
-# AIL_from_visual_obs
+# AIL_from_visual_obs_with_latent_information
 
 ## Instructions
 
