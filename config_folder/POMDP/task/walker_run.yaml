@@ -1,5 +1,5 @@
 defaults:
-  - medium
+  - easy
   - _self_
 
 task_name: walker_run
