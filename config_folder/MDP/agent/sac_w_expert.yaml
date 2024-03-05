@@ -24,3 +24,4 @@ agent:
   discriminator_lr: 1e-4
   GAN_loss: ${GAN_loss}
   from_dem: ${from_dem}
+  penalty_term: ${penalty_term}

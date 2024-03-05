@@ -100,7 +100,7 @@ class DDPG_Agent:
                  hidden_depth, discount, actor_lr, actor_betas, actor_update_frequency, 
                  critic_lr, critic_betas, critic_tau, critic_target_update_frequency,
                  batch_size, num_expl_steps, stddev_schedule, stddev_clip,
-                 reward_d_coef, discriminator_lr, GAN_loss='bce', from_dem=False):
+                 reward_d_coef, discriminator_lr, GAN_loss='bce', from_dem=False, penalty_term=True):
 
         self.action_range = action_range
         self.device = torch.device(device)
@@ -116,6 +116,7 @@ class DDPG_Agent:
         self.batch_size = batch_size
         self.GAN_loss = GAN_loss
         self.from_dem = from_dem
+        self.penalty_term = penalty_term
 
         self.critic = DoubleQCritic(obs_dim, action_dim, hidden_dim, hidden_depth).to(self.device)
         self.critic_target = DoubleQCritic(obs_dim, action_dim, hidden_dim, hidden_depth).to(self.device)
@@ -291,13 +292,23 @@ class DDPG_Agent:
         if self.GAN_loss == 'least-square':
             expert_loss = F.mse_loss(expert_d, torch.ones(expert_d.size(), device=self.device))
             agent_loss = F.mse_loss(agent_d, -1*torch.ones(agent_d.size(), device=self.device))
-            grad_pen_loss = self.compute_discriminator_grad_penalty_LS(obs_e, next_e)
+
+            if self.penalty_term:
+                grad_pen_loss = self.compute_discriminator_grad_penalty_LS(obs_e, next_e)
+            else:
+                grad_pen_loss = 0
+
             loss = 0.5*(expert_loss + agent_loss) + grad_pen_loss
 
         elif self.GAN_loss == 'bce':
             expert_loss = (expert_d.log_prob(torch.ones_like(expert_d.mode()).to(self.device))).mean()
             agent_loss = (agent_d.log_prob(torch.zeros_like(agent_d.mode()).to(self.device))).mean()
-            grad_pen_loss = self.compute_discriminator_grad_penalty_bce(obs_a.detach(), next_a.detach(), obs_e.detach(), next_e.detach())
+
+            if self.penalty_term:
+                grad_pen_loss = self.compute_discriminator_grad_penalty_bce(obs_a.detach(), next_a.detach(), obs_e.detach(), next_e.detach())
+            else:
+                grad_pen_loss = 0
+
             loss = -(expert_loss+agent_loss) + grad_pen_loss
 
         logger.log('train_discriminator/expert_loss', expert_loss, step)

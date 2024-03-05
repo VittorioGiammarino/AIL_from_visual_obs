@@ -28,6 +28,7 @@ frame_skip: 1
 #imitation
 GAN_loss: least-square
 from_dem: false
+penalty_term: true
 
 # hydra configuration
 hydra:
