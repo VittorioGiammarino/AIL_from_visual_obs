@@ -43,6 +43,13 @@ class RandomShiftsAug(nn.Module):
                              padding_mode='zeros',
                              align_corners=False)
 
+class NoAug(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return x
+
 class Encoder(nn.Module):
     def __init__(self, obs_shape, feature_dim):
         super().__init__()
@@ -148,7 +155,7 @@ class LailAgent:
                  hidden_dim, critic_target_tau, num_expl_steps,
                  update_every_steps, stddev_schedule, stddev_clip, use_tb, 
                  reward_d_coef, discriminator_lr, spectral_norm_bool, GAN_loss='bce',
-                 from_dem=False):
+                 from_dem=False, add_aug=True):
         
         self.device = device
         self.critic_target_tau = critic_target_tau
@@ -194,7 +201,10 @@ class LailAgent:
         self.discriminator_opt = torch.optim.Adam(self.discriminator.parameters(), lr=discriminator_lr)
 
         # data augmentation
-        self.aug = RandomShiftsAug(pad=4)
+        if add_aug:
+            self.aug = RandomShiftsAug(pad=4)
+        else:
+            self.aug = NoAug()
 
         self.train()
         self.critic_target.train()

@@ -44,6 +44,7 @@ discriminator_lr: 4e-4
 spectral_norm_bool: false
 GAN_loss: bce
 from_dem: false
+add_aug: true
 
 # PatchAIL_config
 reward_type: 'airl'

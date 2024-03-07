@@ -20,4 +20,5 @@ agent:
   spectral_norm_bool: ${spectral_norm_bool}
   GAN_loss: ${GAN_loss}
   from_dem: ${from_dem}
+  add_aug: ${add_aug}
 
