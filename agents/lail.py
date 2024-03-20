@@ -565,14 +565,14 @@ class LailAgent:
             if self.RL_plus_IL:
                 reward, metrics_r = self.compute_reward(obs, action, reward_a)
             else:
-                reward, metrics_r = self.compute_reward(obs, action)
+                reward, metrics_r = self.compute_reward(obs, action, reward_a=0)
         else:
             metrics.update(self.update_discriminator(obs_a, next_obs_a, obs_e, next_obs_e))
 
             if self.RL_plus_IL:
                 reward, metrics_r = self.compute_reward(obs, next_obs, reward_a)
             else:
-                reward, metrics_r = self.compute_reward(obs, next_obs)
+                reward, metrics_r = self.compute_reward(obs, next_obs, reward_a=0)
 
         metrics.update(metrics_r)
 
