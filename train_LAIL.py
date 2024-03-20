@@ -20,9 +20,10 @@ from video import TrainVideoRecorder, VideoRecorder, VideoRecorder_bio_expert
 
 torch.backends.cudnn.benchmark = True
 
-def make_agent(obs_spec, action_spec, cfg):
+def make_agent(obs_spec, action_spec, pretrained_encoder_path, cfg):
     cfg.obs_shape = obs_spec.shape
     cfg.action_shape = action_spec.shape
+    cfg.pretrained_encoder_path = str(pretrained_encoder_path)
     return hydra.utils.instantiate(cfg)
 
 def make_env_expert(cfg):
@@ -54,8 +55,10 @@ class Workspace:
         self.device = torch.device(cfg.device)
         self.setup()
 
+        pretrained_encoder_path = self.work_dir.parents[3] / f'pretrained_encoders/{cfg.pretrained_encoder_model_name}_checkpoint.pth.tar'
         self.agent = make_agent(self.train_env.observation_spec(),
                                 self.train_env.action_spec(),
+                                pretrained_encoder_path,
                                 self.cfg.agent)
         
         self.timer = utils.Timer()

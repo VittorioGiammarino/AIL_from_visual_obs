@@ -6,9 +6,11 @@ import torch.nn.functional as F
 from torch import distributions as torchd
 from torch import autograd
 from torch.nn.utils import spectral_norm 
+from torchvision import transforms
 
 from utils_folder import utils
 from utils_folder.utils_dreamer import Bernoulli
+from utils_folder.resnet import BasicBlock, ResNet84
 
 class RandomShiftsAug(nn.Module):
     def __init__(self, pad):
@@ -49,6 +51,96 @@ class NoAug(nn.Module):
 
     def forward(self, x):
         return x
+    
+class Identity(nn.Module):
+    def __init__(self, input_placeholder=None):
+        super(Identity, self).__init__()
+
+    def forward(self, x):
+        return x
+    
+class PretrainedEncoder(nn.Module):
+    def __init__(self, obs_shape, feature_dim, model_name, device):
+        super().__init__()
+        # a wrapper over a non-RL encoder model
+        self.device = device
+        assert len(obs_shape) == 3
+        self.n_input_channel = obs_shape[0]
+        assert self.n_input_channel % 3 == 0
+        self.n_images = self.n_input_channel // 3
+        self.model = self.init_model(model_name)
+        self.model.fc = Identity()
+        self.repr_dim = self.model.get_feature_size()
+
+        self.normalize_op = transforms.Normalize((0.485, 0.456, 0.406),
+                                                 (0.229, 0.224, 0.225))
+        self.channel_mismatch = True
+
+        self.trunk = nn.Sequential(nn.Linear(self.repr_dim, feature_dim),
+                        nn.LayerNorm(feature_dim), nn.Tanh())
+        
+        self.apply(utils.weight_init)
+
+    def init_model(self, model_name):
+        # model name is e.g. resnet6_32channel
+        n_layer_string, n_channel_string = model_name.split('_')
+
+        layer_string_to_layer_list = {
+            'resnet6': [0, 0, 0, 0],
+            'resnet10': [1, 1, 1, 1],
+            'resnet18': [2, 2, 2, 2],
+        }
+
+        channel_string_to_n_channel = {
+            '32channel': 32,
+            '64channel': 64,
+        }
+
+        layer_list = layer_string_to_layer_list[n_layer_string]
+        start_num_channel = channel_string_to_n_channel[n_channel_string]
+        return ResNet84(BasicBlock, layer_list, start_num_channel=start_num_channel).to(self.device)
+
+    def expand_first_layer(self):
+        # convolutional channel expansion to deal with input mismatch
+        multiplier = self.n_images
+        self.model.conv1.weight.data = self.model.conv1.weight.data.repeat(1,multiplier,1,1) / multiplier
+        means = (0.485, 0.456, 0.406) * multiplier
+        stds = (0.229, 0.224, 0.225) * multiplier
+        self.normalize_op = transforms.Normalize(means, stds)
+        self.channel_mismatch = False
+
+    def freeze_bn(self):
+        # freeze batch norm layers (VRL3 ablation shows modifying how
+        # batch norm is trained does not affect performance)
+        for module in self.model.modules():
+            if isinstance(module, nn.BatchNorm2d):
+                if hasattr(module, 'weight'):
+                    module.weight.requires_grad_(False)
+                if hasattr(module, 'bias'):
+                    module.bias.requires_grad_(False)
+                module.eval()
+
+    def get_parameters_that_require_grad(self):
+        params = []
+        for name, param in self.named_parameters():
+            if param.requires_grad == True:
+                params.append(param)
+        return params
+
+    def transform_obs_tensor_batch(self, obs):
+        # transform obs batch before put into the pretrained resnet
+        new_obs = self.normalize_op(obs.float()/255)
+        return new_obs
+
+    def _forward_impl(self, x):
+        x = self.model.get_features(x)
+        return x
+
+    def forward(self, obs):
+        o = self.transform_obs_tensor_batch(obs)
+        h = self._forward_impl(o)
+        z = self.trunk(h)
+        return z
 
 class Encoder(nn.Module):
     def __init__(self, obs_shape, feature_dim):
@@ -151,11 +243,30 @@ class Critic(nn.Module):
         return q1, q2
 
 class LailAgent:
-    def __init__(self, obs_shape, action_shape, device, lr, feature_dim,
-                 hidden_dim, critic_target_tau, num_expl_steps,
-                 update_every_steps, stddev_schedule, stddev_clip, use_tb, 
-                 reward_d_coef, discriminator_lr, spectral_norm_bool, GAN_loss='bce',
-                 from_dem=False, add_aug=True):
+    def __init__(self, 
+                 obs_shape, 
+                 action_shape, 
+                 device, 
+                 lr, 
+                 feature_dim,
+                 hidden_dim, 
+                 critic_target_tau, 
+                 num_expl_steps,
+                 update_every_steps, 
+                 stddev_schedule, 
+                 stddev_clip, 
+                 use_tb, 
+                 reward_d_coef, 
+                 discriminator_lr, 
+                 spectral_norm_bool, 
+                 pretrained_encoder_path, 
+                 encoder_lr_scale, 
+                 pretrained_encoder=False, 
+                 pretrained_encoder_model_name = 'resnet6_32channel', 
+                 GAN_loss='bce', 
+                 from_dem=False, 
+                 add_aug=True, 
+                 RL_plus_IL = False):
         
         self.device = device
         self.critic_target_tau = critic_target_tau
@@ -166,8 +277,19 @@ class LailAgent:
         self.stddev_clip = stddev_clip
         self.GAN_loss = GAN_loss
         self.from_dem = from_dem
+        self.RL_plus_IL = RL_plus_IL
+        
+        if pretrained_encoder:
+            self.encoder = PretrainedEncoder(obs_shape, feature_dim, pretrained_encoder_model_name, device).to(device)
+            self.load_pretrained_encoder(pretrained_encoder_path)
+            self.encoder.expand_first_layer()
+            print("Convolutional channel expansion finished: now can take in %d images as input." % self.encoder.n_images)
+            encoder_lr = lr * encoder_lr_scale
 
-        self.encoder = Encoder(obs_shape, feature_dim).to(device)
+        else:
+            self.encoder = Encoder(obs_shape, feature_dim).to(device)
+            encoder_lr = lr 
+
         self.actor = Actor(action_shape, feature_dim, hidden_dim).to(device)
         self.critic = Critic(action_shape, feature_dim, hidden_dim).to(device)
         self.critic_target = Critic(action_shape, feature_dim, hidden_dim).to(device)
@@ -195,7 +317,7 @@ class LailAgent:
                 NotImplementedError
 
         # optimizers
-        self.encoder_opt = torch.optim.Adam(self.encoder.parameters(), lr=lr)
+        self.encoder_opt = torch.optim.Adam(self.encoder.parameters(), lr=encoder_lr)
         self.actor_opt = torch.optim.Adam(self.actor.parameters(), lr=lr)
         self.critic_opt = torch.optim.Adam(self.critic.parameters(), lr=lr)
         self.discriminator_opt = torch.optim.Adam(self.discriminator.parameters(), lr=discriminator_lr)
@@ -208,6 +330,27 @@ class LailAgent:
 
         self.train()
         self.critic_target.train()
+
+    def load_pretrained_encoder(self, model_path, verbose=True):
+        if verbose:
+            print("Trying to load pretrained model from:", model_path)
+
+        checkpoint = torch.load(model_path, map_location=torch.device(self.device))
+        state_dict = checkpoint['state_dict']
+
+        pretrained_dict = {}
+        # remove `module.` if model was pretrained with distributed mode
+        for k, v in state_dict.items():
+            if 'module.' in k:
+                name = k[7:]
+            else:
+                name = k
+            pretrained_dict[name] = v
+
+        self.encoder.model.load_state_dict(pretrained_dict, strict=False)
+
+        if verbose:
+            print("Pretrained model loaded!")
 
     def train(self, training=True):
         self.training = training
@@ -282,7 +425,7 @@ class LailAgent:
 
         return metrics
     
-    def compute_reward(self, obs_a, next_a):
+    def compute_reward(self, obs_a, next_a, reward_a):
         metrics = dict()
 
         # augment
@@ -311,7 +454,11 @@ class LailAgent:
             elif self.GAN_loss == 'bce':
                 reward_d = d.mode()
             
-            reward = reward_d
+            if self.RL_plus_IL:
+                reward = reward_d + reward_a
+
+            else:
+                reward = reward_d
 
             if self.use_tb:
                 metrics['reward_d'] = reward_d.mean().item()
@@ -414,10 +561,18 @@ class LailAgent:
         # update critic
         if self.from_dem:
             metrics.update(self.update_discriminator(obs_a, action, obs_e, action_e))
-            reward, metrics_r = self.compute_reward(obs, action)
+
+            if self.RL_plus_IL:
+                reward, metrics_r = self.compute_reward(obs, action, reward_a)
+            else:
+                reward, metrics_r = self.compute_reward(obs, action)
         else:
             metrics.update(self.update_discriminator(obs_a, next_obs_a, obs_e, next_obs_e))
-            reward, metrics_r = self.compute_reward(obs, next_obs)
+
+            if self.RL_plus_IL:
+                reward, metrics_r = self.compute_reward(obs, next_obs, reward_a)
+            else:
+                reward, metrics_r = self.compute_reward(obs, next_obs)
 
         metrics.update(metrics_r)
 

@@ -50,6 +50,14 @@ add_aug: true
 reward_type: 'airl'
 reward_scale: 1.0
 
+# pretrained_encoder_config
+pretrained_encoder: false
+encoder_lr_scale: 1
+pretrained_encoder_model_name: 'resnet6_32channel'
+
+#RL+IL
+RL_plus_IL: false
+
 
 hydra:
   run:

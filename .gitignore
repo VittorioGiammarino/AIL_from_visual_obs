@@ -10,6 +10,7 @@ expert_static_datasets/**
 expert_source_policies_POMDP/**
 expert_source_policies_POMDP_latent_model/**
 expert_policies/**
+pretrained_encoders/**
 
 *.sh
 *.mp4

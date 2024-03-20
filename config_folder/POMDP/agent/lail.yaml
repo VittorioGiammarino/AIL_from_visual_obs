@@ -21,4 +21,9 @@ agent:
   GAN_loss: ${GAN_loss}
   from_dem: ${from_dem}
   add_aug: ${add_aug}
+  pretrained_encoder: ${pretrained_encoder}
+  pretrained_encoder_path: ??? #to be specified later
+  encoder_lr_scale: ${encoder_lr_scale}
+  pretrained_encoder_model_name: ${pretrained_encoder_model_name}
+  RL_plus_IL: ${RL_plus_IL}
 
